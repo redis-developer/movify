@@ -58,14 +58,15 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(db, username: str):
+def get_user(username: str):
+    db = fake_users_db
     if username in db:
         user_dict = db[username]
         return UserInDB(**user_dict)
 
 
 def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
+    user = get_user(username)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -98,7 +99,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
+    user = get_user(token_data.username)
     if user is None:
         raise credentials_exception
     return user
@@ -126,9 +127,16 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.get("/pwd/hash/pls")
-def password_hash_pls(password: str):
-    return get_password_hash(password)
+@app.post("/signup")
+async def signup(username, password):
+    if username in fake_users_db:
+        return 'nope'
+    else:
+        fake_users_db[username] = {
+            'username': username,
+            'hashed_password': get_password_hash(password),
+        }
+    return 'OK'
 
 
 ###############################################################################
