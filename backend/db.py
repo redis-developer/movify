@@ -9,26 +9,39 @@ class User(BaseModel):
     username: str
     email: Optional[str] = None
     full_name: Optional[str] = None
-    disabled: Optional[bool] = None
 
 
 class UserInDB(User):
     hashed_password: str
 
 
-db = {}
+user_db = {
+    name: {
+        'username': name,
+        'password': get_password_hash(name),
+    }
+    for name in 'matt paul maria'.split()
+}
+
+follow_db = {
+    'matt': ['paul', 'maria']
+}
+
+know_db = {
+    'matt': {'PeppaPig': {'seen': '2020-10-01'}}
+}
 
 
 def get_user(username: str):
-    if username in db:
-        user_dict = db[username]
+    if username in user_db:
+        user_dict = user_db[username]
         return UserInDB(**user_dict)
 
 
 def new_user(username: str, password: str):
-    if username in db:
+    if username in user_db:
         return False
-    db[username] = {
+    user_db[username] = {
         'username': username,
         'hashed_password': get_password_hash(password),
     }
@@ -42,3 +55,15 @@ def authenticate_user(username: str, password: str):
     if not verify_password(password, user.hashed_password):
         return False
     return user
+
+
+def get_movies(username):
+    return know_db.get(username, [])
+
+
+def get_friends(username):
+    return follow_db.get(username, [])
+
+
+def put_know(username, movie_id, props: dict):
+    know_db[username][movie_id] = props

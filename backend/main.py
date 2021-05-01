@@ -1,11 +1,10 @@
-from datetime import datetime, timedelta
 from typing import Optional
+from datetime import timedelta
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+from jose import JWTError
 from pydantic import BaseModel
 
 from db import (
@@ -18,8 +17,6 @@ from db import (
 from security import (
     decode_token,
     create_access_token,
-    verify_password,
-    get_password_hash,
 )
 
 
@@ -67,15 +64,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise credentials_exception
     user = get_user(username=token_data.username)
-    if user is None:
+    if not user:
         raise credentials_exception
     return user
-
-
-async def get_current_active_user(current_user: User = Depends(get_current_user)):
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
 
 
 @app.post("/token", response_model=Token)
@@ -95,10 +86,10 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 
 @app.get("/users/me", response_model=User)
-async def read_users_me(current_user: User = Depends(get_current_active_user)):
+async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
 @app.get("/users/me/items/")
-async def read_own_items(current_user: User = Depends(get_current_active_user)):
+async def read_own_items(current_user: User = Depends(get_current_user)):
     return [{"item_id": "Foo", "owner": current_user.username}]

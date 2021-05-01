@@ -11,7 +11,7 @@ function App() {
     return <Login setToken={setToken} />
   }
 
-  fetch('http://localhost:8000/users/me', {
+  fetch('/api/users/me', {
     method: 'GET',
     headers: {
       'Authorization': 'Bearer ' + token,

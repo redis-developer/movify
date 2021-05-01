@@ -15,7 +15,7 @@ const errHandler = res => {
 
 async function signupUser(formData) {
 
-  return fetch('http://localhost:8000/signup', {
+  return fetch('/api/signup', {
     method: 'POST',
     body: formData
   })
@@ -25,7 +25,7 @@ async function signupUser(formData) {
 }
 
 async function loginUser(formData) {
- return fetch('http://localhost:8000/token', {
+ return fetch('/api/token', {
    method: 'POST',
    body: formData
  })
@@ -43,6 +43,10 @@ export default function Login({ setToken }) {
     const formData = new FormData();
     formData.append('username', username);
     formData.append('password', password);
+    if (!username || !password) {
+      alert('need both fields')
+      return;
+    }
 
     const token = await loginUser(formData);
     if (token) setToken(token);
@@ -59,21 +63,8 @@ export default function Login({ setToken }) {
 
   return(
     <div className="login-wrapper">
-      <h1>Please Sign Up</h1>
-      <form onSubmit={handleSubmit2}>
-        <label>
-          <p>Username</p>
-          <input type="text" onChange={e => setUserName(e.target.value)} />
-        </label>
-        <label>
-          <p>Password</p>
-          <input type="password" onChange={e => setPassword(e.target.value)} />
-        </label>
-        <div>
-          <button type="submit">Submit</button>
-        </div>
-      </form>
-      <h1>Please Log In</h1>
+      <button onClick={handleSubmit}>signin</button>
+      <button onClick={handleSubmit2}>signup</button>
       <form onSubmit={handleSubmit}>
         <label>
           <p>Username</p>

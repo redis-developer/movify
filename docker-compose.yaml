@@ -1,5 +1,14 @@
 version: '3.7'
 services:
+  nginx:
+    image: nginx:1.17
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 8000:80
+    depends_on:
+      - backend
+      - frontend
   redisJSON:
     image: redislabs/rejson:latest
     ports:
@@ -8,7 +17,7 @@ services:
     image: redislabs/redisgraph:latest
     ports:
       - 1235:6379
+  frontend:
+    image: redis21_frontend
   backend:
     image: redis21_backend
-    ports:
-      - 8000:8000
