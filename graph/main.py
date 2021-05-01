@@ -1,19 +1,61 @@
+from dataclasses import dataclass
+
 import redis
-from redisgraph import Node, Edge, Graph
+import redisgraph as rg
 
 r = redis.Redis(host='localhost', port=6379)
+
+@dataclass
+class Node:
+    label: str
+    id: str
+    props: dict
+
+
+@dataclass
+class Edge:
+    relation: str
+    src: Node
+    dst: Node
+    props: dict
+
+
+def cast(x):
+    if isinstance(x, rg.Node):
+        return Node(
+            x.label,
+            x.properties['id'],
+            x.properties,
+        )
+    if isinstance(x, rg.Edge):
+        return Edge(
+            x.relation,
+            cast(x.src_node),
+            cast(x.dest_node),
+            x.properties,
+        )
+    else:
+        return x  # str or int
+
+
+class Graph:
+    def __init__(self, name, redis):
+        self.g = rg.Graph(name, redis)
+
+    def query(self, q):
+        res = self.g.query(q)
+        return [[cast(x) for x in record] for record in res.result_set]
+
 
 graph = Graph('graph', r)
 
 
-def User(id):
-    props = {'id': id}
-    return Node(label='User', properties=props)
+def User(id, props={}):
+    return Node('User', id, props)
 
 
-def Movie(id):
-    props = {'id': id}
-    return Node(label='Movie', properties=props)
+def Movie(id, props={}):
+    return Node('Movie', id, props)
 
 
 """
@@ -28,39 +70,32 @@ User follows User
 
 
 def upsert_node(n):
-    id = n.properties['id']
-    q = "MERGE (n:%s{id:'%s'}) " % (n.label, id)
-    # SET properties
+    q = "MERGE (n:%s{id:'%s'}) " % (n.label, n.id)
+    for k, v in n.props.items():
+        q += "SET n.%s = %s " % (k, repr(v))
     graph.query(q)
 
 
 def delete_node(n):
-    id = n.properties['id']
-    q = "MATCH (n:%s{id:'%s'}) " % (n.label, id)
+    q = "MATCH (n:%s{id:'%s'}) " % (n.label, n.id)
     q += "DELETE n "
     graph.query(q)
 
 
 def upsert_edge(e):
-    s = e.src_node
-    sid = s.properties['id']
-    t = e.dest_node
-    tid = t.properties['id']
-    q = "MATCH (s:%s{id:'%s'}) " % (s.label, sid)
-    q += "MATCH (t:%s{id:'%s'}) " % (t.label, tid)
+    s, t = e.src, e.dst
+    q = "MATCH (s:%s{id:'%s'}) " % (s.label, s.id)
+    q += "MATCH (t:%s{id:'%s'}) " % (t.label, t.id)
     q += "MERGE (s)-[:%s]->(t) " % e.relation
     # SET properties
     graph.query(q)
 
 
 def delete_edge(e):
-    s = e.src_node
-    sid = s.properties['id']
-    t = e.dest_node
-    tid = t.properties['id']
-    q = "MATCH (s:%s{id:'%s'}) " % (s.label, sid)
-    q += "MATCH (t:%s{id:'%s'}) " % (t.label, tid)
-    q += "MATCH (s)-[r:%s]->(t) " % e.relation
+    s, t = e.src, e.dst
+    q = "MATCH (s:%s{id:'%s'}) " % (s.label, s.id)
+    q += "MATCH (t:%s{id:'%s'}) " % (t.label, t.id)
+    q += "MATCH (s)-[:%s]->(t) " % e.relation
     q += "DELETE r "
     graph.query(q)
 
@@ -75,7 +110,7 @@ def known_movies(user_id):
     q += "MATCH (u)-[:knows]->(m:Movie) "
     q += "RETURN m.id"
     res = graph.query(q)
-    return [record[0] for record in res.result_set]
+    return [record[0] for record in res]
 
 
 def follows(user_id):
@@ -83,7 +118,7 @@ def follows(user_id):
     q = "MATCH (u)-[:follows]->(v:User) "
     q += "RETURN v.id"
     res = graph.query(q)
-    return [record[0] for record in res.result_set]
+    return [record[0] for record in res]
 
 
 def known_by(user_id, movie_id):
@@ -92,7 +127,7 @@ def known_by(user_id, movie_id):
     q += "MATCH (u)-[:follows]->(v:User)-[:knows]->(m) "
     q += "RETURN v.id"
     res = graph.query(q)
-    return [record[0] for record in res.result_set]
+    return [record[0] for record in res]
 
 
 if __name__ == '__main__':
