@@ -18,7 +18,7 @@ class UserInDB(User):
 user_db = {
     name: {
         'username': name,
-        'password': get_password_hash(name),
+        'hashed_password': get_password_hash(name),
     }
     for name in 'matt paul maria'.split()
 }
@@ -28,13 +28,14 @@ follow_db = {
 }
 
 know_db = {
-    'matt': {'PeppaPig': {'seen': '2020-10-01'}}
+    'matt': [{'name': 'PeppaPig', 'seen': '2020-10-01'}]
 }
 
 
 def get_user(username: str):
     if username in user_db:
         user_dict = user_db[username]
+        print(user_dict)
         return UserInDB(**user_dict)
 
 
@@ -66,4 +67,9 @@ def get_friends(username):
 
 
 def put_know(username, movie_id, props: dict):
-    know_db[username][movie_id] = props
+    for m in know_db[username]:
+        if m['id'] == movie_id:
+            m.update(props)
+            break
+    else:
+        know_db[username].append(props)

@@ -49,7 +49,7 @@ export default function Login({ setToken }) {
     }
 
     const token = await loginUser(formData);
-    if (token) setToken(token);
+    if (token?.access_token) setToken(token);
   }
   const handleSubmit2 = async e => {
     e.preventDefault();

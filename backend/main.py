@@ -12,6 +12,8 @@ from db import (
     get_user,
     new_user,
     authenticate_user,
+    get_friends,
+    get_movies,
 )
 
 from security import (
@@ -90,6 +92,12 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-@app.get("/users/me/items/")
-async def read_own_items(current_user: User = Depends(get_current_user)):
-    return [{"item_id": "Foo", "owner": current_user.username}]
+@app.get("/movies")
+def movies(current_user: User = Depends(get_current_user)):
+    print(current_user)
+    return get_movies(current_user.username)
+
+
+@app.get("/friends")
+def friends(current_user: User = Depends(get_current_user)):
+    return get_friends(current_user.username)
