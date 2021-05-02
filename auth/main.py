@@ -33,8 +33,9 @@ async def login(request: Request):
 async def auth(request: Request):
     token = await oauth.google.authorize_access_token(request)
     user = await oauth.google.parse_id_token(request, token)
+    # add cookie
     request.session['user'] = user
-    # persist to DB
+    # TODO persist to DB
     return RedirectResponse('me')
 
 
@@ -47,7 +48,7 @@ class User(BaseModel):
 def get_user(request: Request) -> User:
     user = request.session.get('user')
     if not user:
-        raise HTTPException(status_code=403, detail="Unauthenticated")
+        raise HTTPException(status_code=401, detail="Unauthenticated")
     return User(**user)
 
 
