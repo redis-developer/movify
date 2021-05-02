@@ -1,11 +1,12 @@
-from typing import Optional
-from datetime import timedelta
-
-from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi.middleware.cors import CORSMiddleware
-from jose import JWTError
+from typing import List
 from pydantic import BaseModel
+
+from authlib.integrations.starlette_client import OAuth
+from starlette.config import Config
+
+from fastapi import FastAPI, Request, Depends, HTTPException
+from starlette.responses import RedirectResponse
+from starlette.middleware.sessions import SessionMiddleware
 
 from db import (
     User,
@@ -15,6 +16,7 @@ from db import (
     get_friends,
     get_movies,
 )
+import db
 
 from security import (
     decode_token,
@@ -22,82 +24,67 @@ from security import (
 )
 
 
-app = FastAPI()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-origins = ["http://localhost:3000"]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+config = Config('.env')  # read config from .env file
+oauth = OAuth(config)
+oid = 'https://accounts.google.com/.well-known/openid-configuration'
+oauth.register(
+    name='google',
+    server_metadata_url=oid,
+    client_kwargs={
+        'scope': 'openid email profile'
+    }
 )
 
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
+app = FastAPI()
+app.add_middleware(SessionMiddleware, secret_key=config('SECRET_KEY'))
 
 
-class TokenData(BaseModel):
-    username: Optional[str] = None
+@app.get('/login')
+async def login(request: Request):
+    # absolute url for callback
+    # we will define it below
+    redirect_uri = 'http://127.0.0.1:8000/api/auth'  # request.url_for('auth')
+    return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
-@app.post('/signup')
-async def signup(form_data: OAuth2PasswordRequestForm = Depends()):
-    if not new_user(form_data.username, form_data.password):
-        raise HTTPException(status_code=400, detail="Username already in use")
-    return 'OK'
+@app.get('/auth')
+async def auth(request: Request):
+    token = await oauth.google.authorize_access_token(request)
+    user = await oauth.google.parse_id_token(request, token)
+    # add cookie
+    request.session['user'] = user
+    # TODO persist to DB
+    return RedirectResponse('me')
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = decode_token(token)
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = TokenData(username=username)
-    except JWTError:
-        raise credentials_exception
-    user = get_user(username=token_data.username)
+class User(BaseModel):
+    name: str
+    email: str
+    picture: str
+
+
+def get_user(request: Request) -> User:
+    user = request.session.get('user')
     if not user:
-        raise credentials_exception
+        raise HTTPException(status_code=401, detail="Unauthenticated")
+    return User(**user)
+
+
+@app.get('/me')
+async def me(user: User = Depends(get_user)):
     return user
 
 
-@app.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=30)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
+@app.get('/suggest')
+async def suggest(q: str) -> List[str]:
+    return db.suggest(q)
 
 
-@app.get("/users/me", response_model=User)
-async def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
+@app.get('/search')
+async def search(q: str) -> List[str]:
+    return db.search(q)
 
 
-@app.get("/movies")
-def movies(current_user: User = Depends(get_current_user)):
-    print(current_user)
-    return get_movies(current_user.username)
-
-
-@app.get("/friends")
-def friends(current_user: User = Depends(get_current_user)):
-    return get_friends(current_user.username)
+@app.get('/friends')
+async def friends(user: User = Depends(get_user)) -> List[str]:
+    return db.friends(user)

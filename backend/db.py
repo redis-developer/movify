@@ -73,3 +73,7 @@ def put_know(username, movie_id, props: dict):
             break
     else:
         know_db[username].append(props)
+
+
+def suggest(q: str):
+    return [q + post for post in 'abcd']

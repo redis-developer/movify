@@ -1,6 +1,10 @@
 fastapi
 uvicorn[standard]
 
+httpx
+authlib
+
+itsdangerous
 python-multipart
 python-jose[cryptography]
 passlib[bcrypt]

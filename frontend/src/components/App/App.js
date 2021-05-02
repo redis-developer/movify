@@ -1,11 +1,19 @@
 import React, {useState, useEffect} from 'react';
 // import './App.css';
-import Login from '../Login/Login';
-import useToken from './useToken';
+import Search from '../Search/Search';
+import axios from 'axios';
+import { BrowserRouter as Router, Link, Route, useLocation } from 'react-router-dom'
+
+function SearchResults() {
+  const params = new URLSearchParams(useLocation().search);
+  const query = params.get('q');
+  // TODO query and result list
+  return <p>{query}</p>
+}
 
 function App() {
 
-  const { token, setToken } = useToken();
+  const [ user, setUser ] = useState('loading');
   const [ items, setItems ] = useState(null);
   const [ friends, setFriends ] = useState(null);
 
@@ -19,49 +27,30 @@ function App() {
     }
     return res;
   }
-    
 
   useEffect(() => {
-    if (!token) return;
-    fetch('/api/users/me', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-      },
-    })
-      .then(errHandler)
-      .then(data => data.json())
-      .then(data => console.log(data))
-      .catch(err => {})
+    axios.get('/api/me')
+      .then(res => setUser(res.data))
+      .catch(err => setUser(null))
+  }, [])
 
-    fetch('/api/friends', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-      },
-    })
-      .then(errHandler)
-      .then(data => data.json())
-      .then(data => setFriends(data))
-      .catch(err => {})
-
-    fetch('/api/movies', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-      },
-    })
-      .then(errHandler)
-      .then(data => data.json())
-      .then(data => setItems(data))
-      .catch(err => {})
-  }, [token, setItems, setFriends])
-
-
-  if(!token) {
-    return <Login setToken={setToken} />
+  if (user === 'loading') {
+    return <h1>Loading</h1>
+  } else if (user === null) {
+    // real redirect -> auth server
+    window.location.href = '/api/login'
+    return null
+  } else {
+    return (
+      <Router>
+        <Search/>
+        <p>{user.name}</p>
+        <Route path="/search">
+          <SearchResults/>
+        </Route>
+      </Router>
+    )
   }
-
   if (items && friends) {
     return (
       <div>
