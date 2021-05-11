@@ -1,5 +1,6 @@
 fastapi
 uvicorn[standard]
+requests
 
 httpx
 authlib
@@ -11,3 +12,4 @@ passlib[bcrypt]
 
 redis
 redisgraph
+redisearch
