@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+// user session
+
 export default function useToken() {
   const getToken = () => {
     const tokenString = sessionStorage.getItem('token');
