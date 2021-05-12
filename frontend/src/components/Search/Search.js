@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-const axios = require('axios');
+import axios from 'axios';
+
+// const api = 'http://localhost:8000/api'
+const api = 'http://movify.h4ck.me:8000/api'
+
 
 function Search() {
   const [ query, setQuery ] = useState('');
@@ -8,26 +12,39 @@ function Search() {
   const history = useHistory();
 
   useEffect(() => {
-    const url = new URL('http://127.0.0.1:8000/api/suggest')
+    const url = new URL(api + '/suggest')
     const params = { q: query }
     url.search = new URLSearchParams(params);
     axios.get(url)
-      .then(res => setSugg(res.data))
+      .then(res => {
+        setSugg(res.data)
+        console.log(res.data)
+      })
   }, [query])
 
-  const handleSubmit = e => {
+  const onChange = e => {
+    const val = e.target.value;
+    setQuery(val)
+    // console.log(val)
+  }
+  const onSubmit = e => {
     history.push(`/search?q=${query}`)
     e.preventDefault();
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input onChange={e => setQuery(e.target.value)} />
-      <ul>{sugg.map((e,i) =>
-        <p key={i}>{e}</p>
-      )}</ul>
-    </form>
+    <div className="search-bar">
+      <form onSubmit={onSubmit}>
+        <input onChange={onChange} />
+        <span className="material-icons" onClick={onSubmit}>search</span>
+      </form>
+    </div>
   )
+  /*
+      <ul>{sugg.map((e,i) =>
+      <li key={i}>{e}</li>
+      )}</ul>
+      */
 }
 
 export default Search;
