@@ -1,0 +1,47 @@
+.Navbar {
+	display: flex;
+	background: #555;
+	padding: 10px 0;
+}
+.Navbar * {
+	display: flex;
+	margin: auto 0;
+}
+.Navbar .brand {
+	font-size: 1.6em;
+	padding: 0 .7em;
+	font-weight: 700;
+	width: 240px;
+	height: 100%;
+}
+.Navbar .brand img {
+	height: 100%;
+	margin: 0 14px;
+}
+.Search {
+	display: flex;
+	margin: 0;
+	background: #aaa;
+	color: black;
+	align-items: center;
+	border-radius: 10px;
+}
+.Search span.material-icons {
+	padding: 0 10px;
+	margin: auto 0;
+	cursor: pointer;
+}
+.Search:focus-within {
+	background: #ddd;
+}
+.Search input {
+	outline: none;
+	border: none;
+	background: transparent;
+}
+.Search * {
+	font-size: 1.3em;
+}
+.Search form {
+	display: flex;
+}

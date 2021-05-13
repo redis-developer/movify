@@ -1,0 +1,16 @@
+.Sidebar {
+	font-size: 1.2em;
+}
+.Sidebar a {
+	margin-right: 1em;
+	padding: .4em;
+	padding-left: 30px;
+	border-radius: 0 30px 30px 0;
+}
+.Sidebar a.active {
+	color: #e64842;
+	font-weight: 700;
+}
+.Sidebar a:hover {
+	background: #fff3;
+}

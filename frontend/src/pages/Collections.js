@@ -1,21 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 
+import MovieTile from '../components/MovieTile';
 
-// TODO display collections not movies
-const displayOne = movie => {
-  // class ListResult
-  const info = movie.info
-  return (
-    <div className="result-tile">
-      <img src={info.poster} alt="poster"/>
-      <div className="desc">
-        <p className="title">{info.title}</p>
-        <p className="date">{info.year}</p>
-      </div>
-    </div>
-  )
-}
 
 export default function Collections() {
   const [mov, setMov] = useState()
@@ -35,7 +22,7 @@ export default function Collections() {
     return (
       <div>
         <div className="result-grid">
-        {mov.map(displayOne)}
+          {mov.map(r => <MovieTile movie={r}/>)}
         </div>
       </div>
     )

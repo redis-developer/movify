@@ -1,0 +1,9 @@
+.MovieTile {
+	display: flex;
+	border: 1px solid white;
+}
+.MovieTile .poster {
+	width: 120px;
+	height: 180px;
+	object-fit: cover;
+}

@@ -2,23 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {useLocation} from 'react-router-dom';
 import axios from 'axios';
 
-
-// TODO replace with tile from POL
-const displayOne = movie => {
-  // class ListResult
-  const info = movie.info
-  return (
-    <div className="result-tile">
-      <img src={info.poster} alt="poster"/>
-      <div className="desc">
-        <p className="title">{info.title}</p>
-        <p className="date">{info.year}</p>
-      </div>
-    </div>
-  )
-      // <Me init={movie.perso} mid={info.id}/>
-}
-
+import MovieTile from '../components/MovieTile';
 
 
 function SearchResults() {
@@ -47,10 +31,10 @@ function SearchResults() {
     return <p>Search: {query}</p>
   else
     return (
-      <div className="search-results">
+      <div className="SearchResults">
         <h1>search results for <b>{query}</b></h1>
         <div className="result-grid">
-        {results.map(displayOne)}
+          {results.map((res,i) => <MovieTile key={i} movie={res}/>)}
         </div>
       </div>
     )

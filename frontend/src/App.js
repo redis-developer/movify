@@ -3,9 +3,10 @@ import './App.css';
 import axios from 'axios';
 import {BrowserRouter as Router, Switch, Route} from 'react-router-dom';
 
-import Search from './components/Search';
+import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 
+import Home from './pages/Home';
 import Movie from './pages/Movie';
 import Profile from './pages/Profile';
 import Collections from './pages/Collections';
@@ -39,35 +40,29 @@ function App() {
     return (
       <Router>
         <>
-          <div className="topnav">
-              <Search/>
-          </div>
-          <div className="grid">
-            <Sidebar/>
-            <div className="scrollable">
-              <div className="main-content">
-                <Switch>
-                  <Route path="/search">
-                    <SearchResults/>
-                  </Route>
-                  <Route path="/movies/:id">
-                    <Movie/>
-                  </Route>
-                  <Route path="/users/:id">
-                    <Profile/>
-                  </Route>
-                  <Route path="/collections">
-                    <Collections/>
-                  </Route>
-                  <Route path="/collections/:id">
-                    <SomeCollection/>
-                  </Route>
-                  <Route path="/">
-                    <h1>Welcome back, {user.name}</h1>
-                  </Route>
-                </Switch>
-              </div>
-            </div>
+          <Navbar/>
+          <Sidebar/>
+          <div className="Page">
+            <Switch>
+              <Route path="/search">
+                <SearchResults/>
+              </Route>
+              <Route path="/movies/:id">
+                <Movie/>
+              </Route>
+              <Route path="/users/:id">
+                <Profile/>
+              </Route>
+              <Route path="/collections">
+                <Collections/>
+              </Route>
+              <Route path="/collections/:id">
+                <SomeCollection/>
+              </Route>
+              <Route path="/">
+                <Home user={user}/>
+              </Route>
+            </Switch>
           </div>
         </>
       </Router>

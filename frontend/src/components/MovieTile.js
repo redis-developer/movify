@@ -1,5 +1,8 @@
 import React, {useState} from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
+
+import './MovieTile.css';
 
 
 const MovieUser = ({mid, init}) => {
@@ -25,15 +28,19 @@ const MovieUser = ({mid, init}) => {
 }
 
 function MovieTile({movie}) {
+  if (movie === undefined)
+    return <p> something went wrong, pls tell us </p>
   const info = movie.info
   return (
-    <div className="result-tile">
-      <img src={info.poster} alt="poster"/>
+    <div className="MovieTile">
+      <Link to={"movies/"+info.id}>
+      <img className="poster" src={info.poster} alt="poster"/>
       <div className="desc">
         <p className="title">{info.title}</p>
         <p className="date">{info.year}</p>
-      </div>
       <MovieUser init={movie.perso} mid={info.id}/>
+      </div>
+      </Link>
     </div>
   )
 }

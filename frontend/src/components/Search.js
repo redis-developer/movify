@@ -33,10 +33,10 @@ function Search() {
   }
 
   return (
-    <div className="search-bar">
+    <div className="Search">
       <form onSubmit={onSubmit}>
-        <input onChange={onChange} />
         <span className="material-icons" onClick={onSubmit}>search</span>
+        <input placeholder="placehodl" onChange={onChange} />
       </form>
     </div>
   )
