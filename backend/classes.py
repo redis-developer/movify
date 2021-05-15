@@ -14,9 +14,15 @@ class MovieShort(BaseModel):
     id: str
     title: str
     year: str
+    poster: Optional[str]
 
 
 class MovieUser(BaseModel):
     liked: bool = False
     watched: bool = False
-    follow: List[User] = []
+    friends: List[User] = []
+
+
+class ListResult(BaseModel):
+    info: MovieShort
+    perso: MovieUser

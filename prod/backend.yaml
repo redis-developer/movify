@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  annotations:
+    networking.gke.io/load-balancer-type: "Internal"
+  labels:
+    app: backend
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: gcr.io/redishacks/backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: HOST
+          value: https://redishacks.ew.r.appspot.com

@@ -6,18 +6,18 @@ r = redis.StrictRedis(host="redis")
 assert r.ping(), "Couldn't connect to Redis"
 
 
-def jset(key, value, path='.'):
+def set(key, value, update=True, path='.'):
     value = json.dumps(value)
     res = r.execute_command('JSON.SET', key, path, value)
     assert res == b'OK'
 
 
-def jget(key, path='.') -> Optional[dict]:
+def get(key, path='.') -> Optional[dict]:
     res = r.execute_command('JSON.GET', key, path)
     return res and json.loads(res)
 
 
-def jdel(key):
+def delete(key):
     r.delete(key)
 
 

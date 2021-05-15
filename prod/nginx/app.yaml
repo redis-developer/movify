@@ -1,0 +1,4 @@
+runtime: custom
+env: flex
+vpc_access_connector:
+  name: projects/redishacks/locations/europe-west1/connectors/connecc

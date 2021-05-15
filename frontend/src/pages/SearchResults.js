@@ -25,6 +25,8 @@ function SearchResults() {
     }
   }, [query])
 
+  console.log(results)
+
   if (query === undefined)
     return <p>Loading</p>
   if (results === undefined)

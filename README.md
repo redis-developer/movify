@@ -15,8 +15,13 @@ while writing short code.
 The app was built with FastAPI (Python), React (JS) and
 uses nginx as a reverse-proxy.
 
-For development, use the `docker-compose.yaml` config file.
+## folder structure
+
+Most of the code is located under `frontend/` and `backend/`.
+
 The files related to production are located under `prod/`
+
+For development, use the `docker-compose.yaml` config file.
 
 
 ## database

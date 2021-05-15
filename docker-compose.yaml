@@ -9,19 +9,23 @@ services:
     depends_on:
       - backend
       - frontend
-  rediSearch:
-    image: redislabs/redisearch:latest
-    ports:
-      - 1000:6379
-  redisJSON:
-    image: redislabs/rejson:latest
-    ports:
-      - 1001:6379
-  redisGraph:
-    image: redislabs/redisgraph:latest
-    ports:
-      - 1002:6379
+  redis:
+    image: redislabs/redismod:latest
+    command: --loadmodule /usr/lib/redis/modules/redisearch.so --loadmodule /usr/lib/redis/modules/redisgraph.so --loadmodule /usr/lib/redis/modules/rejson.so --dir /data
+#   ports:
+#     - 6379:6379
+    volumes:
+      - ./redis-data:/data
   frontend:
     image: redis21_frontend
+    volumes:
+      - ./frontend:/app
   backend:
     image: redis21_backend
+    entrypoint: uvicorn main:app --host 0.0.0.0 --port 8000 --root-path /api --reload
+    depends_on:
+      - redis
+    environment:
+      - HOST=http://127.0.0.1:8000
+    volumes:
+      - ./backend:/app

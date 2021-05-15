@@ -1,14 +1,17 @@
 import React, {useState, useEffect} from 'react';
-import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import {Link, useParams} from 'react-router-dom';
+import {getUser, getCollections} from '../actions/Actions'
 
 function Profile() {
   const {id} = useParams();
   const [user, setUser] = useState();
+  const [collections, setCollections] = useState();
 
   useEffect(() => {
-    axios.get('/api/users/' + id)
-    .then(res => setUser(res.data))
+    getUser(id).then(res => setUser(res.data))
+  }, [id])
+  useEffect(() => {
+    getCollections(id).then(res => setCollections(res.data))
   }, [id])
 
   if (user === undefined) {
@@ -19,7 +22,14 @@ function Profile() {
       <img alt="" className="pic" src={user.picture}/>
       <div>
         <h1>User {user.name}</h1>
-        <p>{user.username}</p>
+      </div>
+
+      <div>
+        <Link to={`/users/{id}/collections`}>
+        <h1>Collections</h1>
+        </Link>
+        {collections && collections.map(c =>
+        <li>{c.name}</li>)}
       </div>
     </div> 
   )

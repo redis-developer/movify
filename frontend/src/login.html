@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Movify Login</title>
+	<style>
+* {
+	font-family: Roboto, sans-serif;
+	box-sizing: border-box;
+}
+body {
+	background: #e1e1e1;
+	margin: 0;
+	overflow-x: hidden;
+}
+.container {
+	display: grid;
+	height: 100vh;
+	grid-template-columns: 1fr 1fr;
+}
+.bg-phone {
+	display: none;
+	position: absolute;
+	width: 100vw;
+	overflow: hidden;
+	z-index: -2;
+}
+.bg-desktop {
+	position: absolute;
+	height: 100vh;
+	width: 100vw;
+	z-index: -2;
+}
+@media screen and (max-width: 1008px) {
+	.bg-desktop { display: none; }
+	/* .bg-phone { display: block; } */
+	.cta {
+		background: #325987;
+		padding: 2em;
+		border-radius: 1em;
+	}
+	.container {
+		grid-template-columns: 1fr;
+	}
+}
+.container > div{
+	margin: auto;
+}
+.cta {
+	color: white;
+	text-align: center;
+	margin: 1em;
+}
+.infos {
+	color: black;
+	margin: 1em;
+}
+.blabla {
+	font-size: 1.2em;
+	width: 400px;
+}
+.cta h1 {
+	font-size: 5em;
+	margin: 0;
+}
+.cta p {
+	font-size: 1.4rem;
+	margin-bottom: 69px;
+}
+.login {
+	display: flex;
+	justify-content: center;
+}
+.login a {
+	text-transform: uppercase;
+	font-weight: 700;
+	border-radius: 10px;
+	padding: 10px;
+	margin: 0 20px;
+	font-size: 1.4em;
+}
+.login a.primary {
+	background: #C70000;
+	color: white;
+}
+.login a.secondary {
+	background: white;
+	color: #C70000;
+}
+	</style>
+</head>
+<body>
+	<svg class="bg-desktop" preserveAspectRatio="xMidYMid slice"
+		width="1780" height="1085" viewBox="0 0 1780 1085" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="469" y="-36" width="1312" height="1187" fill="#E1E1E1"/>
+<ellipse cx="-926.5" cy="492" rx="1874.5" ry="1851" fill="#252221"/>
+<ellipse cx="-926.5" cy="492" rx="1874.5" ry="1851" fill="url(#paint0_radial)"/>
+<defs>
+<radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(-927 492) scale(2015.56 1441.26)">
+<stop offset="0.802083" stop-color="#325987"/>
+<stop offset="1" stop-color="#23466F"/>
+</radialGradient>
+</defs>
+</svg>
+
+<svg class="bg-phone"
+	width="841" height="1596" viewBox="0 0 841 1596" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="-203" y="636" width="1312" height="1187" fill="#E1E1E1"/>
+<ellipse cx="432" cy="-1196" rx="1929" ry="1905" fill="#252221"/>
+<ellipse cx="432" cy="-1196" rx="1929" ry="1905" fill="url(#paint1_radial)"/>
+<defs>
+<radialGradient id="paint1_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(431.485 -1196) scale(2074.17 1483.3)">
+<stop offset="0.802083" stop-color="#325987"/>
+<stop offset="1" stop-color="#23466F"/>
+</radialGradient>
+</defs>
+</svg>
+
+	<div class="container">
+		<div class="cta">
+			<img src="https://storage.googleapis.com/redis21-movify-res/movify-sm.png">
+			<h1>Movify</h1>
+			<p>The social network for cinephiles</p>
+			<div class="login">
+				<a href="/api/login" class="primary">Sign up</a>
+				<a href="/api/login" class="secondary">Sign in</a>
+			</div>
+
+		</div>
+		<div class="infos">
+			<div class="blabla">
+				This is an entry for Build on Redis 21.
+				<br><br>
+				Feel free to poke around and try all functionalities, a lot of love and effort were put into making it all work together :)
+				<br><br>
+				This website was built on RedisGraph.
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -6,12 +6,6 @@ from pydantic import BaseModel
 import omdb
 from redis_util import rj, rg, rs
 from redis_util.rj import r  # main redis client
-from redis_util.rg import (
-    know_upsert,
-    know_delete,
-    follow_upsert,
-    follow_delete,
-)
 
 
 class User(BaseModel):
@@ -75,33 +69,33 @@ def whois(username) -> Optional[str]:
 # users ---------------------------
 
 def user_get(id) -> Optional[User]:
-    u = rj.jget('userdata::'+id)
+    u = rj.get('userdata::'+id)
     return u and User(**u)
 
 
 def user_set(id, u: User):
-    rj.jset('userdata::'+id, dict(u))
-    rg.user_upsert(id, dict(u))
+    rj.set('userdata::'+id, dict(u))
+    rg.User.upsert(id, dict(u))
 
 
 def follows_get(id) -> List[User]:
-    ids = rg.follows(id)
+    ids = rg.Follows.get(id)
     return [user_get(i) for i in ids]
 
 
 def follow_add(u1, u2):
-    rg.follow_upsert(u1, u2)
+    rg.Follows.upsert(u1, u2)
 
 
 def follow_del(u1, u2):
-    rg.follow_delete(u1, u2)
+    rg.Follows.delele(u1, u2)
 
 
 # movies ---------------------------
 
 def movie_get(mid):
     key = 'movidata::' + mid
-    res = rj.jget(key)
+    res = rj.get(key)
     if res:
         return res
     api_key = "b713b3903ca08fb8ddc80e4081d5fcee"
@@ -111,7 +105,7 @@ def movie_get(mid):
         raise KeyError('invalid movie id')
     mov = res.json()
     rg.movie_upsert(mid, {})  # empty props in graph
-    rj.jset('moviedata::'+mid, mov)  # all in json
+    rj.set('moviedata::'+mid, mov)  # all in json
     # rs.add_mov(mov)  # add to search?
 
 
@@ -137,7 +131,7 @@ def search(uid, q: str, force=False) -> List[MovieInfo]:
         return None
     mid = mov['imdbID']
     rg.movie_upsert(mid, {})
-    rj.jset('moviedata::'+mid, mov)
+    rj.set('moviedata::'+mid, mov)
     rs.add_mov(mov)
     return [movie_info(uid, mid)]
 

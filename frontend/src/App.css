@@ -57,3 +57,33 @@ a {
 	grid-template-columns: repeat( auto-fit, minmax(320px, 1fr) );
 	gap: 20px;
 }
+
+iframe {
+	position: absolute;
+	border: none;
+	left: 0px;
+	width: 100%;
+	top: 0px;
+	height: 100%;
+}
+
+.Modal {
+	position: fixed;
+	display: block;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background: #fff1;
+	margin: auto;
+	z-index: 3;
+}
+
+.Modal > * {
+	margin: 15% auto;
+	height: 30%;
+	width: 30%;
+	background: #333;
+	padding: 1rem;
+	border-radius: 10px;
+}

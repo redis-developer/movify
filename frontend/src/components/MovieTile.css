@@ -1,9 +1,50 @@
 .MovieTile {
 	display: flex;
-	border: 1px solid white;
+	border: 1px solid transparent;
+	background: #0003;
+	height: 180px;
+	border-radius: 1em;
+	color: #eee;
+}
+.MovieTile:hover {
+	border: 1px solid #888;
 }
 .MovieTile .poster {
 	width: 120px;
-	height: 180px;
+	height: 100%;
+	border-radius: 1em;
 	object-fit: cover;
+}
+.MovieTile .desc {
+	position: relative;
+	height: 100%;
+	flex-grow: 1;
+	padding: 1em;
+}
+.MovieTile .title {
+	font-size: 1.4em;
+	font-weight: 700;
+	margin: 0;
+}
+.MovieTile .dropdown {
+	position: absolute;
+	bottom: 0;
+	font-size: 2rem;
+}
+
+.popper {
+	position: absolute;
+	background: #000;
+	color: white;
+	display: block;
+	border-radius: 5px;
+	overflow: hidden;
+	font-size: 1rem;
+	margin: 0;
+}
+.popper li {
+	padding: .5em;
+}
+.popper li:hover {
+	background: #fff3;
 }

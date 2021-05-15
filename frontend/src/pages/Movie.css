@@ -1,0 +1,26 @@
+.Movie {
+	color: #eee;
+}
+.Movie .head {
+	display: flex;
+}
+.Movie .head > img {
+	width: 33%;
+}
+.Movie .head > div {
+	width: 66%;
+	padding-left: 1em;
+}
+.Movie .head h1 {
+	margin: 0;
+}
+.Movie .head h2 {
+	font-weight: bold;
+	color: #aaa;
+	margin: 0 0 1em;
+}
+.Movie .head h2 {
+	font-weight: bold;
+	color: #aaa;
+	margin: 0 0 1em;
+}

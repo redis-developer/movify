@@ -3,7 +3,7 @@ import { useHistory } from 'react-router-dom';
 import axios from 'axios';
 
 // const api = 'http://localhost:8000/api'
-const api = 'http://movify.h4ck.me:8000/api'
+// const api = 'http://movify.h4ck.me:8000/api'
 
 
 function Search() {
@@ -11,6 +11,7 @@ function Search() {
   const [ sugg, setSugg ] = useState([]);
   const history = useHistory();
 
+  /*
   useEffect(() => {
     const url = new URL(api + '/suggest')
     const params = { q: query }
@@ -21,6 +22,7 @@ function Search() {
         console.log(res.data)
       })
   }, [query])
+  */
 
   const onChange = e => {
     const val = e.target.value;
@@ -36,7 +38,7 @@ function Search() {
     <div className="Search">
       <form onSubmit={onSubmit}>
         <span className="material-icons" onClick={onSubmit}>search</span>
-        <input placeholder="placehodl" onChange={onChange} />
+        <input placeholder="Search for a movie" onChange={onChange} />
       </form>
     </div>
   )

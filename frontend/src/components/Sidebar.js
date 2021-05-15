@@ -1,41 +1,41 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
 
-const data = [
-  {
-    path: '/home',
-    text: 'Home',
-  },
-  {
-    path: '/collections',
-    text: 'Friends',
-  },
-  {
-    path: '/collections',
-    text: 'Collections',
-  },
-  {
-    path: '/colleions',
-    text: 'Liked',
-  },
-  {
-    path: '/colleions',
-    text: 'Watchlist',
-  },
-  {
-    path: '/colleions',
-    text: 'Watched',
-  },
-];
+import {UserContext, CollectionsContext} from '../App';
 
 
 function Sidebar() {
+  const user = useContext(UserContext);
+  const collections = useContext(CollectionsContext);
+
+  const fixed = [
+    {
+      path: '/home',
+      text: 'Home',
+    },
+    {
+      path: '/friends',
+      text: 'Friends',
+    },
+    {
+      path: `/users/${user.id}/collections/`,
+      text: 'Collections',
+    },
+  ]
+
+  const cols = collections.map(c => {
+    return {
+      path: `/collections/${c.id}`,
+      text: c.name,
+    }
+  });
+
   return (
     <div className="Sidebar">
       <ul>
-        {data.map((item, index) => (
-          <li><NavLink to={item.path} activeClassName="active">
+        {fixed.concat(cols).map((item, index) => (
+          <li><NavLink exact to={item.path} activeClassName="active">
             {item.text}
           </NavLink></li>
         ))}

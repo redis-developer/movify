@@ -1,5 +1,7 @@
-from typing import List, Optional
-from pydantic import BaseModel
+from datetime import datetime
+import os
+import uuid
+from typing import List
 
 from authlib.integrations.starlette_client import OAuth
 from config import config
@@ -8,8 +10,10 @@ from fastapi import FastAPI, Request, Depends, HTTPException
 from starlette.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
-from db import User, MovieInfo, MovieUser
+from classes import User, ListResult
+from redis_util import rg, rj
 import db
+import tmdb
 
 
 oauth = OAuth(config)
@@ -26,7 +30,15 @@ app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=config('SECRET_KEY'))
 
 DEV = True
-host = 'http://127.0.0.1:8000'
+host = os.environ['HOST']
+
+
+def parse_ts(timestamp: str):
+    return datetime.fromisoformat(timestamp)
+
+
+def now() -> str:
+    return datetime.now().isoformat()
 
 
 @app.get('/login')
@@ -41,13 +53,13 @@ async def login(request: Request):
 async def auth(request: Request):
     token = await oauth.google.authorize_access_token(request)
     user = await oauth.google.parse_id_token(request, token)
-    uid = 'G:'+user['sub']
+    uid = user['sub']
     u = db.user_get(uid)
     if u:
         user = dict(u)
     else:
         user['id'] = uid
-        user['username'] = 'G:'+user['sub']
+        user['username'] = user['sub']
         user = User(**user)
         db.user_set(uid, user)
         user = dict(user)
@@ -58,76 +70,135 @@ async def auth(request: Request):
 
 def get_user(request: Request) -> User:
     uid = request.session.get('user')
-    user = uid and db.user_get(uid)
-    if not user:
+    if uid is None:
         raise HTTPException(status_code=401, detail="Unauthenticated")
-    return user
+    user = rj.get('userdata::'+uid)
+    return User(**user)
 
-
-# read -----------------------------
 
 @app.get('/me')
 async def me(user: User = Depends(get_user)):
     return user
 
 
-@app.get('/suggest')
-async def suggest(q: str, u=Depends(get_user)) -> List[str]:
-    return db.suggest(u.id, q)
+@app.put('/follows/{uid}')
+def put_follow(uid, user: User = Depends(get_user)) -> List[User]:
+    rg.Follows.delete(user.id, uid)
+    return 'OK'
 
 
-@app.get('/search')
-async def search(q: str, u=Depends(get_user)) -> List[MovieInfo]:
-    # https://image.tmdb.org/t/p/w500/
-    api_key = "b713b3903ca08fb8ddc80e4081d5fcee"
-    import requests
-    res = requests.get('https://api.themoviedb.org/3/search/movie',
-                       params={'api_key': api_key, 'query': q})
-    data = res.json()
-    for r in data['results']:
-        r['perso'] = {}
-        r['release_date'] = r['release_date'][:4]
-    return [MovieInfo(**r) for r in data['results']]
-    # return db.search(u.id, q)
+@app.delete('/follows/{uid}')
+def del_follow(uid: str, user: User = Depends(get_user)) -> List[User]:
+    rg.Follows.delete(user.id, uid)
+    return 'OK'
 
 
-@app.get('/friends')
-async def friends(user: User = Depends(get_user)) -> List[User]:
-    return db.friends(user.id)
+@app.get('/users/{uid}/follows')
+def get_follows(uid: str, user: User = Depends(get_user)) -> List[User]:
+    res = rg.Follows.get(uid)
+    res = [y for x, p, y in res]
+    res = [rj.get('userdata::'+uid) for uid in res]
+    return res
 
 
-@app.get('/my-movies')
-async def my_movies(user: User = Depends(get_user)) -> List[MovieInfo]:
-    return db.my_movies(user.id)
+@app.get('users/{uid}/followers')
+def get_followers(uid: str, user: User = Depends(get_user)) -> List[User]:
+    res = rg.Follows.get(None, user.id)
+    res = [y for x, p, y in res]
+    res = [rj.get('userdata::'+uid) for uid in res]
+    return res
 
 
-# read -----------------------------
-
-@app.put('/movies/{mid}')
-def put_user_movie(mid, props: MovieUser,
-                   user=Depends(get_user)) -> Optional[MovieInfo]:
-    info = db.movie_info(user.id, mid)
-    if info is None:
-        return None
-    db.know_upsert(user.id, mid, dict(props))
-    return db.movie_info(user.id, mid)
-
-
-@app.delete('/movies/{mid}')
-def del_user_movie(mid,
-                   user=Depends(get_user)) -> Optional[MovieInfo]:
-    db.know_delete(user.id, mid)
-    return db.movie_info(user.id, mid)
+@app.get('/users/{uid}')
+def profile(uid: str, user: User = Depends(get_user)):
+    res = rj.get('userdata::'+uid)
+    print(user.id, uid)
+    rel = bool(rg.Follows.get(user.id, uid))
+    # TODO collections
+    return res and {
+        'username': res['username'],
+        'name': res['name'],
+        'picture': res['picture'],
+        'follows': rel,
+        'collections': [],
+    }
 
 
 @app.get('/movies/{mid}')
-def get_user_movie(mid, user=Depends(get_user)) -> MovieInfo:
-    api_key = "b713b3903ca08fb8ddc80e4081d5fcee"
-    import requests
-    res = requests.get('https://api.themoviedb.org/3/movie/' + mid,
-                       params={'api_key': api_key})
-    data = res.json()
-    data['perso'] = {}
-    data['release_date'] = data['release_date'][:4]
-    return MovieInfo(**data)
-    return db.movie_info(user.id, mid)
+def get_movie(mid, u: User = Depends(get_user)):
+    r = tmdb.get(mid)
+    # TODO collections
+    return r and {
+        'info': r,
+        'collections': rg.in_collections(u.id, r['id']),
+        'friends': rg.known_by_followers(u.id, r['id']),
+    }
+
+
+@app.get('/search')
+def search(q: str, u=Depends(get_user)) -> List[ListResult]:
+    res = tmdb.search(q)
+    return [{
+        'info': r,
+        'collections': rg.in_collections(u.id, r['id']),
+        'friends': rg.known_by_followers(u.id, r['id']),
+    } for r in res]
+    # return db.search(u.id, q)
+
+
+@app.get('/users/{uid}/collections')
+def get_collections(uid, u=Depends(get_user)) -> List[dict]:
+    res = rg.Has.get(uid)
+    print(res)
+    return [rj.get('collection::'+c) for u, _, c in res]
+
+
+@app.put('/collections/{cid}')
+def put_collection(cid, props: dict, u=Depends(get_user)):
+    rj.set('collection::'+cid, props)
+    return 'OK'
+
+
+@app.post('/collections')
+def new_collection(u=Depends(get_user)):
+    cid = uuid.uuid4().hex
+    rg.Has.upsert(u.id, cid, {'time': now()})
+    props = {
+        'id': cid,
+        'name': 'new collection',
+        'desc': '',
+    }
+    rj.set('collection::'+cid, props)
+    return props
+
+
+@app.get('/collections/{cid}')
+def get_collection(cid, u=Depends(get_user)):
+    res = [m for c, _, m in rg.Contains.get(cid)]
+    res = [tmdb.get(mid) for mid in res]
+    return {
+        'info': rj.get('collection::'+cid),
+        'movies': [{
+            'info': r,
+            'collections': rg.in_collections(u.id, r['id']),
+            'friends': rg.known_by_followers(u.id, r['id']),
+        } for r in res]
+    }
+
+
+@app.delete('/collections/{cid}')
+def del_collection(cid, u=Depends(get_user)):
+    rg.Collection.delete(u.id, cid)
+    return 'OK'
+
+
+@app.put('/collections/{cid}/movies/{mid}')
+def insert_collection(cid, mid, u=Depends(get_user)):
+    rg.Contains.upsert(cid, mid, {'time': now()})
+    return 'OK'
+
+
+@app.delete('/collections/{cid}/movies/{mid}')
+def pop_collection(cid, mid, u=Depends(get_user)):
+    rg.Contains.delete(cid, mid)
+    return 'OK'

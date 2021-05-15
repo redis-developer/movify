@@ -72,11 +72,12 @@ def node_delete(n):
 
 def edge_upsert(e):
     s, t = e.src, e.dst
-    q = "MATCH (s:%s{id:'%s'}) " % (s.label, s.id)
-    q += "MATCH (t:%s{id:'%s'}) " % (t.label, t.id)
+    q = "MERGE (s:%s{id:'%s'}) " % (s.label, s.id)
+    q += "MERGE (t:%s{id:'%s'}) " % (t.label, t.id)
     q += "MERGE (s)-[r:%s]->(t) " % e.relation
     for k, v in e.props.items():
         q += "SET r.%s = %s " % (k, repr(v))
+    print(q)
     graph.query(q)
     """
     q += "RETURN r"
@@ -94,94 +95,89 @@ def edge_delete(e):
     graph.query(q)
 
 
-# Nodes -----------------------
-
-def User(id, props={}):
-    return Node('User', id, props)
+def id_props(x):
+    return (x and "{id:'%s'}" % x) or ''
 
 
-def Movie(id, props={}):
-    return Node('Movie', id, props)
+class AbstractNode:
+    def __init__(self, T):
+        self.T = T
+
+    def __call__(self, x, p={}):
+        return Node(self.T, x, p)
+
+    def make(self, x, p={}):
+        return Node(self.T, x, p)
+
+    def get(self, x):
+        q = "MATCH (x1:%s%s) " % (self.T, id_props(x))
+        q += "RETURN x1"
+        res = graph.query(q)
+        return res and res[0].props or None
+
+    def upsert(self, x, p={}):
+        node_upsert(self.make(x, p))
+
+    def delete(self, x):
+        node_delete(self.make(x))
 
 
-def user_upsert(id, props: dict):
-    u = User(id, props)
-    node_upsert(u)
+class AbstractEdge:
+    def __init__(self, t1, R, t2):
+        self.t1 = t1
+        self.R = R
+        self.t2 = t2
+
+    def __call__(self, x1, x2, p={}):
+        return Edge(self.R, self.t1(x1), self.t2(x2), p)
+
+    def make(self, x1, x2, p={}):
+        return Edge(self.R, self.t1(x1), self.t2(x2), p)
+
+    def props(self, x1, x2):
+        res = self.get(x1, x2)
+        return res and res[0][1] or None
+
+    def upsert(self, x1, x2, props={}):
+        edge_upsert(self.make(x1, x2, props))
+
+    def delete(self, x1, x2):
+        edge_delete(self.make(x1, x2))
+
+    def get(self, x1=None, x2=None):
+        q = "MATCH (x1:%s%s) " % (self.t1.T, id_props(x1))
+        q += "MATCH (x2:%s%s) " % (self.t2.T, id_props(x2))
+        q += "MATCH (x1)-[r:%s]->(x2) " % self.R
+        q += "RETURN x1.id, r, x2.id"
+        print(x1, x2, q)
+        res = graph.query(q)
+        return [(x1, r.props, x2) for x1, r, x2 in res]
 
 
-def user_delete(id):
-    u = User(id)
-    node_delete(u)
+User = AbstractNode('User')
+Collection = AbstractNode('Collection')
+Movie = AbstractNode('Movie')
 
 
-def movie_upsert(id, props: dict):
-    m = Movie(id, props)
-    node_upsert(m)
+Follows = AbstractEdge(User, 'FOLLOWS', User)
+Has = AbstractEdge(User, 'HAS', Collection)
+Contains = AbstractEdge(Collection, 'CONTAINS', Movie)
 
 
-def movie_delete(id):
-    m = Movie(id)
-    node_delete(m)
-
-
-# Edges -----------------------
-
-def Follow(u1: str, u2: str, props={}):
-    return Edge('follow', User(u1), User(u2), props)
-
-
-def Know(u1: str, m1: str, props={}):
-    return Edge('know', User(u1), Movie(m1), props)
-
-
-def follow_upsert(u1: str, u2: str, props: dict = {}):
-    e = Follow(u1, u2, props)
-    edge_upsert(e)
-
-
-def follow_delete(u1: str, u2: str):
-    e = Follow(u1, u2)
-    edge_delete(e)
-
-
-def know_upsert(u1: str, m1: str, props: dict = {}):
-    e = Know(u1, m1, props)
-    edge_upsert(e)
-
-
-def know_delete(u1: str, m1: str):
-    e = Know(u1, m1)
-    edge_delete(e)
-
-
-# Queries ----------------
-
-def get_know(u1, m1) -> dict:
+def in_collections(u1, m1) -> List[str]:
     q = "MATCH (u:User{id:'%s'}) " % u1
     q += "MATCH (m:Movie{id:'%s'}) " % m1
-    q += "MATCH (u)-[r:know]->(m) "
-    q += "RETURN r"
+    q += "MATCH (u)-[:HAS]->(c:Collection)-[:CONTAINS]->(m) "
+    q += "RETURN c.id"
     res = graph.query(q)
-    return res and res[0].props or {}
+    return res
 
 
-def follows(u1) -> List[str]:
-    q = "MATCH (u:User{id:'%s'}) " % u1
-    q += "MATCH (u)-[:follow]->(v:User) "
-    q += "RETURN v.id"
-    return graph.query(q)
-
-
-def known_movies(u1) -> List[str]:
-    q = "MATCH (u:User{id:'%s'}) " % u1
-    q += "MATCH (u)-[:know{like:true}]->(m:Movie) "
-    q += "RETURN m.id"
-    return graph.query(q)
-
-
-def known_by_follows(u1, m1) -> List[str]:
+def known_by_followers(u1, m1) -> List[str]:
     q = "MATCH (u:User{id:'%s'}) " % u1
     q += "MATCH (m:Movie{id:'%s'}) " % m1
-    q += "MATCH (u)-[:follow]->(v:User)-[:know]->(m) "
+    q += "MATCH (u)-[:FOLLOWS]->(v:User)-" \
+        "[:HAS]->(:Collection)-[:CONTAINS]->(m) "
     q += "RETURN v.id"
-    return graph.query(q)
+    res = graph.query(q)
+    return res
