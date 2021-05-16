@@ -1,7 +1,8 @@
 import React, {useState, useEffect, useContext} from 'react';
 import axios from 'axios';
-import {Link, useLocation, Redirect} from 'react-router-dom';
+import {Link, useLocation, useParams, Redirect} from 'react-router-dom';
 
+import {getCollections, newCollection} from '../actions/Actions';
 import {UserContext, CollectionsContext} from '../App';
 import './Collections.css'
 
@@ -17,28 +18,35 @@ const CollectionTile = ({col}) => {
 
 
 export default function Collections({update}) {
-  const collections = useContext(CollectionsContext);
+  const {uid} = useParams();
+  const [cols, setCols] = useState()
   const user = useContext(UserContext);
 
   const [redirect, setRedirect] = useState();
 
   const create = () => {
-    axios.post(`/api/collections`)
+    newCollection()
       .then(res => setRedirect(
         <Redirect to={`/collections/${res.data.id}`}/>
       )).then(update)
   }
 
+  useEffect(() => {
+    getCollections(uid).then(res => setCols(res.data))
+  }, [uid])
+
   const content = (
-    collections === undefined ?
+    cols === undefined ?
       <p>Loading</p>
-    : collections.length === 0 ?
-      <button onClick={create}>new collection</button>
     :
     <div>
-      <button onClick={create}>new collection</button>
       <div className="result-grid">
-        {collections.map(r => <CollectionTile col={r}/>)}
+        {user.id === uid &&
+        <div className="NewCollectionTile" onClick={create}>
+          <h1>+ new collection</h1>
+        </div>
+        }
+        {cols.map(r => <CollectionTile col={r}/>)}
       </div>
     </div>
   )

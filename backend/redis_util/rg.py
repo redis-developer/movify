@@ -90,7 +90,7 @@ def edge_delete(e):
     s, t = e.src, e.dst
     q = "MATCH (s:%s{id:'%s'}) " % (s.label, s.id)
     q += "MATCH (t:%s{id:'%s'}) " % (t.label, t.id)
-    q += "MATCH (s)-[:%s]->(t) " % e.relation
+    q += "MATCH (s)-[r:%s]->(t) " % e.relation
     q += "DELETE r "
     graph.query(q)
 
@@ -179,5 +179,27 @@ def known_by_followers(u1, m1) -> List[str]:
     q += "MATCH (u)-[:FOLLOWS]->(v:User)-" \
         "[:HAS]->(:Collection)-[:CONTAINS]->(m) "
     q += "RETURN v.id"
+    res = graph.query(q)
+    return res
+
+
+def user_activity(u1) -> List[str]:
+    q = "MATCH (v:User{id:'%s'}) " % u1
+    q += "MATCH (v)-"\
+        "[:HAS]->(c:Collection)-[r:CONTAINS]->(m:Movie) "
+    q += "RETURN v.id, c.id, m.id, r.time "
+    q += "ORDER BY r.time DESC "
+    q += "LIMIT 20 "
+    res = graph.query(q)
+    return res
+
+
+def friends_activity(u1) -> List[str]:
+    q = "MATCH (u:User{id:'%s'}) " % u1
+    q += "MATCH (u)-[:FOLLOWS]->(v:User)-" \
+        "[:HAS]->(c:Collection)-[r:CONTAINS]->(m:Movie) "
+    q += "RETURN v.id, c.id, m.id, r.time "
+    q += "ORDER BY r.time DESC "
+    q += "LIMIT 40 "
     res = graph.query(q)
     return res

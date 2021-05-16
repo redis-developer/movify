@@ -8,6 +8,11 @@ from config import config
 api_key = config("TMDB")
 api = 'https://api.themoviedb.org/3'
 img_prefix = "https://image.tmdb.org/t/p/w500"
+missing_img = "https://i.stack.imgur.com/y9DpT.jpg"
+
+
+def get_img(img):
+    return img and img_prefix+img or missing_img
 
 
 @lru_cache(maxsize=300)
@@ -19,7 +24,7 @@ def search(query) -> List[MovieShort]:
         'id': str(r['id']),
         'title': r['title'],
         'year': (r.get('release_date') or '')[:4],
-        'poster': r['poster_path'] and img_prefix+r['poster_path'],
+        'poster': get_img(r['poster_path']),
     } for r in res['results']]
 
 
@@ -32,7 +37,7 @@ def get(mid):
         'id': str(r['id']),
         'title': r['title'],
         'year': r['release_date'][:4],
-        'poster': r['poster_path'] and img_prefix+r['poster_path'],
+        'poster': get_img(r['poster_path']),
 
         'genres': [g['name'] for g in r.get('genres', [])],
     }

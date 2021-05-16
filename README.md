@@ -56,9 +56,10 @@ which can be used without worrying about interfaces.
 
 ```python
 # create classes
-User = AbstractNode('User') # create class
+User = AbstractNode('User')
 Follows = AbstractEdge(User, 'FOLLOWS', User)
 # use
+Follows.upsert('id1', 'id2', {'props': 'value'})
 Follows.get('id1', None) # followed by id1
 Follows.get(None, 'id2') # followers of id2
 ```

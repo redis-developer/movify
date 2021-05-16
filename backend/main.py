@@ -62,6 +62,15 @@ async def auth(request: Request):
         user['username'] = user['sub']
         user = User(**user)
         db.user_set(uid, user)
+        for name in ['Liked', 'Watched']:
+            cid = uuid.uuid4().hex
+            rg.Has.upsert(uid, cid, {'time': now()})
+            props = {
+                'id': cid,
+                'name': name,
+                'desc': '',
+            }
+            rj.set('collection::'+cid, props)
         user = dict(user)
     # add cookie
     request.session['user'] = user['id']
@@ -83,7 +92,7 @@ async def me(user: User = Depends(get_user)):
 
 @app.put('/follows/{uid}')
 def put_follow(uid, user: User = Depends(get_user)) -> List[User]:
-    rg.Follows.delete(user.id, uid)
+    rg.Follows.upsert(user.id, uid)
     return 'OK'
 
 
@@ -94,11 +103,15 @@ def del_follow(uid: str, user: User = Depends(get_user)) -> List[User]:
 
 
 @app.get('/users/{uid}/follows')
-def get_follows(uid: str, user: User = Depends(get_user)) -> List[User]:
+def get_follows(uid: str, user: User = Depends(get_user)):
     res = rg.Follows.get(uid)
     res = [y for x, p, y in res]
     res = [rj.get('userdata::'+uid) for uid in res]
-    return res
+    return [{
+        'id': r['id'],
+        'name': r['name'],
+        'picture': r['picture'],
+    } for r in res]
 
 
 @app.get('users/{uid}/followers')
@@ -124,6 +137,16 @@ def profile(uid: str, user: User = Depends(get_user)):
     }
 
 
+def known_by(uid, mid):
+    res = rg.known_by_followers(uid, mid)
+    res = [rj.get('userdata::'+uid) for uid in res]
+    return [{
+        'id': user['id'],
+        'name': user['name'],
+        'picture': user['picture'],
+    } for user in res]
+
+
 @app.get('/movies/{mid}')
 def get_movie(mid, u: User = Depends(get_user)):
     r = tmdb.get(mid)
@@ -131,7 +154,7 @@ def get_movie(mid, u: User = Depends(get_user)):
     return r and {
         'info': r,
         'collections': rg.in_collections(u.id, r['id']),
-        'friends': rg.known_by_followers(u.id, r['id']),
+        'friends': known_by(u.id, r['id']),
     }
 
 
@@ -141,7 +164,7 @@ def search(q: str, u=Depends(get_user)) -> List[ListResult]:
     return [{
         'info': r,
         'collections': rg.in_collections(u.id, r['id']),
-        'friends': rg.known_by_followers(u.id, r['id']),
+        'friends': known_by(u.id, r['id']),
     } for r in res]
     # return db.search(u.id, q)
 
@@ -181,14 +204,14 @@ def get_collection(cid, u=Depends(get_user)):
         'movies': [{
             'info': r,
             'collections': rg.in_collections(u.id, r['id']),
-            'friends': rg.known_by_followers(u.id, r['id']),
+            'friends': known_by(u.id, r['id']),
         } for r in res]
     }
 
 
 @app.delete('/collections/{cid}')
 def del_collection(cid, u=Depends(get_user)):
-    rg.Collection.delete(u.id, cid)
+    rg.Collection.delete(cid)
     return 'OK'
 
 
@@ -202,3 +225,38 @@ def insert_collection(cid, mid, u=Depends(get_user)):
 def pop_collection(cid, mid, u=Depends(get_user)):
     rg.Contains.delete(cid, mid)
     return 'OK'
+
+
+def activity_dict(x):
+    uid, cid, mid, time = x
+    user = rj.get('userdata::'+uid)
+    coll = rj.get('collection::'+cid)
+    mov = tmdb.get(mid)
+    return {
+        'user': {
+            'id': user['id'],
+            'name': user['name'],
+            'picture': user['picture'],
+        },
+        'collection': {
+            'id': coll['id'],
+            'name': coll['name'],
+        },
+        'movie': {
+            'id': mov['id'],
+            'title': mov['title'],
+            'poster': mov['poster'],
+        }
+    }
+
+
+@app.get('/activity')
+def fri_activity(u=Depends(get_user)):
+    return [activity_dict(x)
+            for x in rg.friends_activity(u.id)]
+
+
+@app.get('/users/{uid}/activity')
+def usr_activity(uid, u=Depends(get_user)):
+    return [activity_dict(x)
+            for x in rg.user_activity(uid)]

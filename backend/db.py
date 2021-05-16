@@ -3,6 +3,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel
 
+from config import config
 import omdb
 from redis_util import rj, rg, rs
 from redis_util.rj import r  # main redis client
@@ -50,6 +51,7 @@ class MovieInfo(Movie):
 
 
 # username to ID ---------------------
+# not used
 
 def id_upsert(id, new) -> bool:
     if r.get('user::id::'+new) is not None:
@@ -78,27 +80,15 @@ def user_set(id, u: User):
     rg.User.upsert(id, dict(u))
 
 
-def follows_get(id) -> List[User]:
-    ids = rg.Follows.get(id)
-    return [user_get(i) for i in ids]
-
-
-def follow_add(u1, u2):
-    rg.Follows.upsert(u1, u2)
-
-
-def follow_del(u1, u2):
-    rg.Follows.delele(u1, u2)
-
-
 # movies ---------------------------
+# not used
 
 def movie_get(mid):
     key = 'movidata::' + mid
     res = rj.get(key)
     if res:
         return res
-    api_key = "b713b3903ca08fb8ddc80e4081d5fcee"
+    api_key = config("TMDB")
     res = requests.get('https://api.themoviedb.org/3/movie/' + mid,
                        params={'api_key': api_key})
     if not res.ok:

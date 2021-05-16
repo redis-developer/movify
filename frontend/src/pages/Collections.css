@@ -4,3 +4,10 @@
 	padding: 1em;
 	border-radius: 1em;
 }
+.NewCollectionTile {
+	cursor: pointer;
+	background: #333;
+	overflow: hidden;
+	padding: 1em;
+	border-radius: 1em;
+}

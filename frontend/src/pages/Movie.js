@@ -5,6 +5,18 @@ import {useParams} from 'react-router-dom';
 import './Movie.css';
 import {MovieUser} from '../components/MovieTile'
 
+const human = (n) => {
+  // https://github.com/Kikobeats/human-number
+  const ALPHABET = 'KMGTPEZY'.split('')
+  const TRESHOLD = 1e3
+
+  n = Math.abs(n)
+  var index = 0
+  while (n >= TRESHOLD && ++index < ALPHABET.length) { n /= TRESHOLD }
+  n = Math.trunc(n*10) / 10
+  return index === 0 ? n : n + ALPHABET[index]
+}
+
 function Movie() {
   const [movie, setMovie] = useState();
   const {id} =  useParams();
@@ -31,14 +43,16 @@ function Movie() {
         <div className="head">
           <img className="poster" src={info.poster} alt="poster"/>
           <div>
-          <h1>{info.title}</h1>
-          <h2>{info.year}</h2>
-            <p>Popularity: {info.popularity}</p>
-            <p>Box-office: {info.revenue} $$$</p>
-            <p>Runtime: {info.runtime}min</p>
+            <h1>{info.title}</h1>
+            <h2>{info.year}</h2>
+            <p>Popularity: {info.popularity}<br/>
+              Box-office: {info.revenue && human(info.revenue)} $$$<br/>
+              Runtime: {info.runtime}min</p>
+            <MovieUser movie={movie}/>
           </div>
         </div>
-        <MovieUser movie={movie}/>
+        {friends.length > 0 && <h2>Known by</h2>}
+        {friends.map(f => <p>{f.name}</p>)}
         <h2>About</h2>
         <h3>Crew</h3>
         {info.crew && info.crew.map(a => (
@@ -48,8 +62,6 @@ function Movie() {
         {info.cast && info.cast.map(a => (
           <li><b>{a.name}</b> as {a.character}</li>
         ))}
-        <p>{friends?.length} friends</p>
-        <p>{col?.length} collectiosn</p>
       </div>
     )
   }

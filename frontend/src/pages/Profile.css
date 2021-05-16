@@ -1,0 +1,7 @@
+.Profile .head {
+	display: flex;
+}
+.Profile .head > div {
+	padding-left: 1em;
+}
+

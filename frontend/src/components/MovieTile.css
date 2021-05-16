@@ -26,10 +26,30 @@
 	font-weight: 700;
 	margin: 0;
 }
-.MovieTile .dropdown {
-	position: absolute;
-	bottom: 0;
+.MovieUser {
+	display: flex;
+}
+.ToggleCol {
+	display: flex;
+	color: #888;
 	font-size: 2rem;
+}
+.ToggleCol .active {
+	color: #fff;
+}
+.ToggleCol > * {
+	padding: .1em;
+}
+.MovieUser > p {
+	padding-left: .5em;
+	margin-top: 10px;
+}
+.ToggleCol .dropdown {
+	z-index: 1;
+	font-size: 2rem;
+}
+.ToggleCol .dropdown .active {
+	background: #fff5;
 }
 
 .popper {

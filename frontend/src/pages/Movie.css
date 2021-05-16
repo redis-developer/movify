@@ -24,3 +24,6 @@
 	color: #aaa;
 	margin: 0 0 1em;
 }
+.Movie .head p {
+	line-height: 1.5;
+}

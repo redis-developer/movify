@@ -28,7 +28,7 @@ a {
 	position: fixed;
 	top: 0;
 	height: 64px;
-	width: 100vw;
+	width: 100%;
 	z-index: 2;
 }
 .Sidebar {
@@ -40,6 +40,7 @@ a {
 	margin: 84px 20px 20px 280px;
 	max-width: 840px;
 	min-height: calc(100vh - 104px);
+	min-width: 400px;
 }
 
 
@@ -79,11 +80,48 @@ iframe {
 	z-index: 3;
 }
 
-.Modal > * {
+.Modal > div {
 	margin: 15% auto;
 	height: 30%;
 	width: 30%;
-	background: #333;
+	background: #444;
 	padding: 1rem;
 	border-radius: 10px;
+}
+
+.Modal > div button {
+	margin-right: 1em;
+}
+.Modal > div input {
+	margin-bottom: 1em;
+}
+
+button {
+	background: #333;
+	font-size: 1.2rem;
+	padding: .2em .5em;
+	margin-right: 1em;
+	border-radius: .4em;
+	border: 1px solid transparent;
+	color: white;
+	cursor: pointer;
+}
+button:hover {
+	border: 1px solid white;
+}
+
+
+.head > img {
+	margin: auto 0;
+}
+
+.Friend {
+	display: flex;
+	background: #333;
+	border-radius: .5em;
+	margin-bottom: 1em;
+}
+.Friend img {
+	border-radius: 50%;
+	padding: 10px;
 }

@@ -4,25 +4,15 @@ import {putFollow, delFollow, getFollows, getFollowers} from '../actions/Actions
 import {UserContext} from '../App'
 
 const Friend = ({data}) => {
-  const {picture, name, id, follow} = data;
-
-  const [state, setState] = useState({follow});
-  const update = (newState) => () => {
-    setState({...state, ...newState})
-    if (newState.follow === true)
-      putFollow(id)
-  }
+  const {picture, name, id} = data;
 
   return (
-    <li>
-      <Link to={'/users/' + id}>
+      <Link to={`/users/${id}`}>
+    <li className="Friend">
         <img src={picture} alt="profile"/>
         <h1>{name}</h1>
-        <button onClick={update({follow: !state.follow})}>
-          {state.follow ? "Unfollow" : "Follow"}
-        </button>
-      </Link>
     </li>
+      </Link>
   )
 }
 

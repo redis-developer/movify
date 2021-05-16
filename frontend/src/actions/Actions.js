@@ -10,11 +10,11 @@ const getUser = (uid) => {
 }
 
 const putFollow = (uid) => {
-  axios.put(`/api/follows/${uid}`)
+  return axios.put(`/api/follows/${uid}`)
 }
 
 const delFollow = (uid) => {
-  axios.delete(`/api/follows/${uid}`)
+  return axios.delete(`/api/follows/${uid}`)
 }
 
 const getFollows = (uid) => {
@@ -44,11 +44,11 @@ const newCollection = () => {
 }
 
 const putCollection = (cid, props) => {
-  axios.put(`/api/collections/${cid}`, props)
+  return axios.put(`/api/collections/${cid}`, props)
 }
 
-const delCollection = (cid, mid) => {
-  axios.delete(`/api/collections/${cid}`)
+const delCollection = (cid) => {
+  return axios.delete(`/api/collections/${cid}`)
 }
 
 // collection content
@@ -57,11 +57,19 @@ const getCollection = (cid) => {
 }
 
 const insertCollection = (cid, mid) => {
-  axios.put(`/api/collections/${cid}/movies/${mid}`)
+  return axios.put(`/api/collections/${cid}/movies/${mid}`)
 }
 
 const popCollection = (cid, mid) => {
-  axios.delete(`/api/collections/${cid}/movies/${mid}`)
+  return axios.delete(`/api/collections/${cid}/movies/${mid}`)
+}
+
+const userActivity = (uid) => {
+  return axios.get(`/api/users/${uid}/activity`)
+}
+
+const friendsActivity = () => {
+  return axios.get(`/api/activity`)
 }
 
 export {
@@ -69,4 +77,5 @@ export {
   search, getMovie,
   getCollections, newCollection, putCollection, delCollection,
   getCollection, insertCollection, popCollection,
+  userActivity, friendsActivity,
 }

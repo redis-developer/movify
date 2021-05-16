@@ -1,8 +1,11 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import axios from 'axios';
-import {useParams} from 'react-router-dom';
+import {Redirect, useParams} from 'react-router-dom';
 
 import MovieTile from '../components/MovieTile';
+import {putCollection, delCollection} from '../actions/Actions'
+
+import {CollectionsContext} from '../App'
 
 
 const RenameModal = ({cb, setVis}) => {
@@ -39,6 +42,7 @@ export default function SomeCollection({update}) {
   const [info, setInfo] = useState('loading')
   const [movies, setMovies] = useState('loading')
   const [renvis, setRenvis] = useState(false);
+  const cols = useContext(CollectionsContext);
 
   const upd = () => {
     axios.get(`/api/collections/${cid}`)
@@ -50,7 +54,7 @@ export default function SomeCollection({update}) {
   }
   const rename = (name) => {
     const newInfo = {...info, name}
-    axios.put(`/api/collections/${cid}`, newInfo)
+    putCollection(cid, newInfo)
       .then(update)
     setInfo(newInfo)
   }
@@ -58,22 +62,39 @@ export default function SomeCollection({update}) {
   useEffect(upd, [cid])
 
 
-  if (movies === 'loading') return <h1>Loading</h1>
+  if (movies === 'loading') {
+    return <h1>Loading</h1>
+  }
+
+  if (info === null) {
+    return <Redirect to="/home" />
+  }
 
   const content = (movies.length === 0
-    ? <p>Empty, search some movies and click the + icon</p>
+    ? <p>Empty... search for some movies!</p>
     : <div className="result-grid">
       {movies.map((m,i) => <MovieTile key={i} movie={m}/>)}
     </div>
   )
+
   return (
     <>
       <h1>Collection {info?.name}</h1>
-      <button onClick={() => setRenvis(true)}>
-        rename
+      {(cols.some(c => c.id === cid)) && 
+      <div style={{marginBottom: "1em"}}>
+        <button onClick={() => setRenvis(true)}>
+          rename
         </button>
+        <button onClick={() =>
+            delCollection(cid)
+              .then(update)
+              .then(() => setInfo(null))}>
+          delete
+        </button>
+      </div>
+      }
       {content}
-      {renvis &&  <RenameModal
+      {renvis && <RenameModal
         setVis={setRenvis}
         cb={rename} />}
     </>
