@@ -51,8 +51,17 @@ For development, use the `docker-compose.yaml` config file.
 
 Interfaces are defined at `backend/main.py` and `frontend/src/actions/Actions.js`.
 The interactions with RedisGraph are defined in `backend/redis_util/rg.py`.
-The specialized abstract classes provide the methods upsert, delete and get/props
+The specialized abstract classes provide the methods upsert, delete and get/props,
 which can be used without worrying about interfaces.
+
+```python
+# create classes
+User = AbstractNode('User') # create class
+Follows = AbstractEdge(User, 'FOLLOWS', User)
+# use
+Follows.get('id1', None) # followed by id1
+Follows.get(None, 'id2') # followers of id2
+```
 
 ## database
 
@@ -87,5 +96,15 @@ and wrote some code in `backend/redis_util/rs.py`. The current app doesn't
 use the module anymore.
 
 
+## Extensibility
 
+The website is cool, but building this app was also an opportunity
+to experiment with the modules and build some tooling.
 
+The collections our data model relies on can be transformed
+to suit real world use cases: they share similarities with
+roles in Identity Access Management, as they stand between users and resources.
+
+With the AbstractNode and AbstractEdge "meta"classes, one can add a new type of
+node or relation, in a single line, and get methods for CRUD operations for free,
+which is quite practical and reduces the number of possible bugs.
