@@ -1,0 +1,25 @@
+{
+    "app_name": "Movify",
+    "description": "The social network for cinefiles",
+    "hidden": "true",
+    "rank": "21",
+    "type": "Full App",
+    "contributed_by": "Community",
+    "repo_url": "https://github.com/drhasler/redis21",
+    "download_url": "",
+    "hosted_url": "https://redishacks.ew.r.appspot.com/",
+    "quick_deploy": "false",
+    "deploy_buttons": [],
+    "language": ["Python"],
+    "redis_commands": ["GRAPH.QUERY", "JSON.SET", "JSON.GET"],
+    "redis_features": [],
+    "redis_modules": ["RedisGraph", "RedisJSON"],
+    "app_image_urls": [
+			"https://storage.googleapis.com/redis21-movify-res/movify-sm.png"
+    ],
+    "youtube_url": "https://youtu.be/k9cVkaWxFH8",
+    "special_tags": ["Hackathon"],
+    "verticals": [],
+    "markdown": "https://raw.githubusercontent.com/drhasler/redis21/main/README.md"
+}
+
