@@ -1,8 +1,12 @@
 # Movify
-## the social network for cinephiles
+**the social network for cinephiles**
+
+![screen1](./res/screen1.png)
+
+![screen2](./res/screen2.png)
 
 this is an entry the Build on Redis 2021 Hackathon.
-The website should be up at [this address](https://redishacks.ew.r.appspot.com/collections) until mid-June at least.
+The website should be up at [this address](https://redishacks.ew.r.appspot.com/) until mid-June at least.
 
 Movify is a website where people can get information about
 their favorite movies, and share collections with their friends.
@@ -15,6 +19,28 @@ while writing short code.
 The app was built with FastAPI (Python), React (JS) and
 uses nginx as a reverse-proxy.
 
+## quick start
+
+To launch the app locally, you will need docker-compose.
+For security reasons, `backend/.env` is not on this repo.
+Since we rely on Google Sign-in for authentication,
+you will need to create a [Web client](https://console.cloud.google.com/apis/credentials?),
+and register `http://127.0.0.1:8000/api/auth` as authorized redirect URI.
+Generate a random string for the encryption `openssl rand -hex 16`.
+Finally, create a TMDB account and [get an API key](https://developers.themoviedb.org/3/getting-started/introduction).
+
+You can now fill the `.env` file as follows:
+
+```
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+SECRET_KEY=
+TMDB=
+```
+
+The script `run.sh` will build the images and start the containers.
+
+
 ## folder structure
 
 Most of the code is located under `frontend/` and `backend/`.
@@ -23,6 +49,10 @@ The files related to production are located under `prod/`
 
 For development, use the `docker-compose.yaml` config file.
 
+Interfaces are defined at `backend/main.py` and `frontend/src/actions/Actions.js`.
+The interactions with RedisGraph are defined in `backend/redis_util/rg.py`.
+The specialized abstract classes provide the methods upsert, delete and get/props
+which can be used without worrying about interfaces.
 
 ## database
 
@@ -51,15 +81,11 @@ User {id, picture, name}
 Collection {id, name, description}
 ```
 
-## env
+Sidenote:
+we initially thought we could have a good use case for the RediSearch module,
+and wrote some code in `backend/redis_util/rs.py`. The current app doesn't
+use the module anymore.
 
-Secrets for the Google Client and API keys are not in the repository.
-`backend/.env` has the following keys:
 
-```
-GOOGLE_CLIENT_ID= for user authentication
-GOOGLE_CLIENT_SECRET=
-SECRET_KEY= session encryption
-TMDB= tmdb API key
-```
+
 
