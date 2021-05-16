@@ -1,9 +1,9 @@
 # Movify
 **the social network for cinephiles**
 
-![screen1](./res/screen1.png)
+![screen1](https://github.com/drhasler/redis21/raw/main/res/screen1.png)
 
-![screen2](./res/screen2.png)
+![screen2](https://github.com/drhasler/redis21/raw/main/res/screen2.png)
 
 this is an entry the Build on Redis 2021 Hackathon.
 The website should be up at [this address](https://redishacks.ew.r.appspot.com/) until mid-June at least.
