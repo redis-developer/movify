@@ -6,6 +6,7 @@
     "type": "Full App",
     "contributed_by": "Community",
     "repo_url": "https://github.com/drhasler/redis21",
+    "preview_image_url": "https://raw.githubusercontent.com/redis-developer/redis21/master/images/app_preview_image.png",
     "download_url": "",
     "hosted_url": "https://redishacks.ew.r.appspot.com/",
     "quick_deploy": "false",
