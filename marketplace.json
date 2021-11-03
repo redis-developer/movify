@@ -20,9 +20,7 @@
     "redis_commands": ["GRAPH.QUERY", "JSON.SET", "JSON.GET"],
     "redis_features": [],
     "redis_modules": ["RedisGraph", "RedisJSON"],
-    "app_image_urls": [
-			"https://storage.googleapis.com/redis21-movify-res/movify-sm.png"
-    ],
+    "app_image_urls": [],
     "youtube_url": "https://www.youtube.com/watch?v=k9cVkaWxFH8",
     "special_tags": [""],
     "verticals": ["Others"],
