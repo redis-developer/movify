@@ -1,32 +1,25 @@
-# Movify
-**the social network for cinephiles**
+# Movify - **The Social network for Cinephiles**
+
+Movify is a website where people can get information about their favorite movies, and share collections with their friends.
+The platform is built using a powerful Redis modules like RedisGraph. It allows to perform complex queries in Cypher, while writing short code.
+
+The app was built with FastAPI (Python), React (JS) and
+uses nginx as a reverse-proxy.
 
 ![screen1](https://github.com/drhasler/redis21/raw/main/res/screen1.png)
 
 ![screen2](https://github.com/drhasler/redis21/raw/main/res/screen2.png)
 
-this is an entry the Build on Redis 2021 Hackathon.
-The website should be up at [this address](https://redishacks.ew.r.appspot.com/) until mid-June at least.
 
-Movify is a website where people can get information about
-their favorite movies, and share collections with their friends.
 
-Our database is simply a Redis cluster.
-Thanks to powerful Redis Modules like RedisGraph,
-we are able to perform complex queries in Cypher,
-while writing short code.
 
-The app was built with FastAPI (Python), React (JS) and
-uses nginx as a reverse-proxy.
+## Quickstart
 
-## quick start
-
-To launch the app locally, you will need docker-compose.
-For security reasons, `backend/.env` is not on this repo.
-Since we rely on Google Sign-in for authentication,
-you will need to create a [Web client](https://console.cloud.google.com/apis/credentials?),
+To launch the app locally, you will need docker-compose. For security reasons, `backend/.env` is not on this repo.
+Since we rely on Google Sign-in for authentication, you will need to create a [Web client](https://console.cloud.google.com/apis/credentials?),
 and register `http://127.0.0.1:8000/api/auth` as authorized redirect URI.
 Generate a random string for the encryption `openssl rand -hex 16`.
+
 Finally, create a TMDB account and [get an API key](https://developers.themoviedb.org/3/getting-started/introduction).
 
 You can now fill the `.env` file as follows:
@@ -41,7 +34,7 @@ TMDB=
 The script `run.sh` will build the images and start the containers.
 
 
-## folder structure
+## Project Structure
 
 Most of the code is located under `frontend/` and `backend/`.
 
@@ -64,7 +57,7 @@ Follows.get('id1', None) # followed by id1
 Follows.get(None, 'id2') # followers of id2
 ```
 
-## database
+## Backend Database
 
 We use the TMDB API to fetch new movies
 and to search a huge collection.
@@ -91,8 +84,9 @@ User {id, picture, name}
 Collection {id, name, description}
 ```
 
-Sidenote:
-we initially thought we could have a good use case for the RediSearch module,
+### Sidenote:
+
+Initially, we thought we could have a good use case for the RediSearch module,
 and wrote some code in `backend/redis_util/rs.py`. The current app doesn't
 use the module anymore.
 
