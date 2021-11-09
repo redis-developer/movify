@@ -21,7 +21,7 @@
     "redis_features": [],
     "redis_modules": ["RedisGraph", "RedisJSON"],
     "app_image_urls": [],
-    "youtube_url": "https://www.youtube.com/watch?v=k9cVkaWxFH8",
+    "youtube_url": "https://www.youtube.com/watch?v=HOyi2tFYJHo",
     "special_tags": [""],
     "verticals": ["Others"],
     "markdown": "https://raw.githubusercontent.com/redis-developer/movify/main/README.md"
