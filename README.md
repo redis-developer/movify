@@ -1,7 +1,7 @@
 # Movify - **The Social network for Cinephiles**
 
 Movify is a website where people can get information about their favorite movies, and share collections with their friends.
-The platform is built using a powerful Redis modules like RedisGraph. It allows to perform complex queries in Cypher, while writing short code.
+The platform is built using a powerful Redis modules like Redis Graph. It allows to perform complex queries in Cypher, while writing short code.
 
 The app was built with FastAPI (Python), React (JS) and
 uses nginx as a reverse-proxy.
@@ -43,7 +43,7 @@ The files related to production are located under `prod/`
 For development, use the `docker-compose.yaml` config file.
 
 Interfaces are defined at `backend/main.py` and `frontend/src/actions/Actions.js`.
-The interactions with RedisGraph are defined in `backend/redis_util/rg.py`.
+The interactions with Redis Graph are defined in `backend/redis_util/rg.py`.
 The specialized abstract classes provide the methods upsert, delete and get/props,
 which can be used without worrying about interfaces.
 
@@ -63,8 +63,8 @@ We use the TMDB API to fetch new movies
 and to search a huge collection.
 Results are cached by the server with a LRU policy.
 
-User generated data is stored in a RedisGraph graph and in JSON blobs,
-where they can be updated with the RedisJSON module.
+User generated data is stored in a Redis Graph graph and in JSON blobs,
+where they can be updated with Redis JSON.
 
 The graph contains 3 types of nodes (User, Movie, Collection) and 3 types of edges:
 
@@ -74,7 +74,7 @@ User -[:HAS]> Collection
 Collection -[:CONTAINS]> Movie {time}
 ```
 
-Having collections in the Graph gives us 
+Having collections in the Graph gives us
 flexible and efficient querying.
 
 Metadata associated to users and collections
@@ -86,7 +86,7 @@ Collection {id, name, description}
 
 ### Sidenote:
 
-Initially, we thought we could have a good use case for the RediSearch module,
+Initially, we thought we could have a good use case for Redis Search,
 and wrote some code in `backend/redis_util/rs.py`. The current app doesn't
 use the module anymore.
 
@@ -174,4 +174,3 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-
